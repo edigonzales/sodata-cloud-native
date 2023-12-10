@@ -25,6 +25,7 @@ import java.sql.Statement;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.stream.XMLInputFactory;
@@ -51,7 +52,7 @@ public class converter {
     private static final String FILES_SERVER_URL = "https://files.geo.so.ch";
 
     private static final String WORK_DIR = System.getProperty("java.io.tmpdir");
-    private static final String DATA_DIR = "/Users/stefan/tmp/cloud-native/"; //data/";
+    private static final String DATA_DIR = System.getenv("DATA_DIR")!=null ? System.getenv("DATA_DIR") : "/Users/stefan/tmp/cloud-native/"; 
 
     private static HttpClient httpClient;
 
@@ -126,7 +127,9 @@ public class converter {
     private static void convertDataset(String identifier, ThemePublication themePublication) throws URISyntaxException, IOException, InterruptedException, SQLException {
         boolean subunits = themePublication.getItems().size() > 1 ? true : false;
         
-        // Verzeichnisse erstellen
+        Map<String,String> formats = Map.of("Parquet", "parquet", "FlatGeobuf", "fgb");
+
+        // Verzeichnisse erstellen, falls nicht vorhanden
         File resultRootDir;
         if (subunits) {
             resultRootDir = Paths.get(DATA_DIR, themePublication.getIdentifier(), identifier.substring(0, identifier.indexOf("."))).toFile();
@@ -135,7 +138,14 @@ public class converter {
         }
 
         if (!resultRootDir.exists()) resultRootDir.mkdirs();
-        err.println("Result root directory: " + resultRootDir);
+
+        for (var format : formats.entrySet()) {
+            File formatDir = Paths.get(resultRootDir.getAbsolutePath(), format.getKey().toLowerCase()).toFile();
+            if (!formatDir.exists()) formatDir.mkdirs(); 
+        }
+    
+
+        //err.println("Result root directory: " + resultRootDir);
 
         // TODO:
         // - Nach subunit-name noch das Format als Unterordner.
@@ -149,7 +159,7 @@ public class converter {
         //     requestUrl = FILES_SERVER_URL + "/" + identifier + "/aktuell/" + identifier + ".gpkg.zip";                        
         // }
         
-        // var zipFile = Paths.get(identifier + ".gpkg.zip").toFile();
+        // var zipFile = Paths.get(WORK_DIR, identifier + ".gpkg.zip").toFile();
         
         // var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
         //         .timeout(Duration.ofSeconds(30L)).build();
@@ -158,68 +168,82 @@ public class converter {
 
         // Entzippen
         // try {
-        //     new ZipFile(zipFile).extractAll(".");
+        //     new ZipFile(zipFile).extractAll(WORK_DIR);
         // } catch (ZipException e) {
         //     throw new IOException(e);
         // } 
 
         // Alle Tabellen eruieren, die konvertiert werden.
-        // var gpkgFile = Paths.get(identifier + ".gpkg").toFile();
-        // var tableNames = new ArrayList<String>();
-        // var url = "jdbc:sqlite:" + gpkgFile;
-        // try (var conn = DriverManager.getConnection(url)) {
-        //     try (var stmt = conn.createStatement()) {
-        //         var rs = stmt.executeQuery("SELECT tablename FROM T_ILI2DB_TABLE_PROP WHERE setting = 'CLASS'"); 
-        //         while (rs.next()) {
-        //             tableNames.add(rs.getString("tablename"));
-        //         }
-        //     }
-        // } 
+        var gpkgFile = Paths.get(WORK_DIR, identifier + ".gpkg").toFile();
+        var tableNames = new ArrayList<String>();
+        var url = "jdbc:sqlite:" + gpkgFile;
+        try (var conn = DriverManager.getConnection(url)) {
+            try (var stmt = conn.createStatement()) {
+                var rs = stmt.executeQuery("SELECT tablename FROM T_ILI2DB_TABLE_PROP WHERE setting = 'CLASS'"); 
+                while (rs.next()) {
+                    tableNames.add(rs.getString("tablename"));
+                }
+            }
+        } 
 
         // Konvertieren
-        // var identifierDir = new File(identifier);
-        // if (!identifierDir.exists()) identifierDir.mkdirs();
+        for (String tableName : tableNames) {
+            err.println("Converting table: " + tableName);
 
-        // for (String tableName : tableNames) {
-        //     err.println("Converting table: " + tableName);
-        //     var outputFile = Paths.get(identifierDir.getAbsolutePath(), tableName + ".fgb").toFile();
+            for (var format : formats.entrySet()) {
+                var outputFileName = tableName + "." + format.getValue();
+                var outputDir = Paths.get(resultRootDir.getAbsolutePath(), format.getKey().toLowerCase()).toFile().getAbsolutePath();
 
-        //     var pwd = new File(".").getAbsolutePath();
-        //     var cmd = "docker run -v " + pwd + ":/data ghcr.io/osgeo/gdal:alpine-small-latest ogr2ogr -lco SPATIAL_INDEX=YES -lco TEMPORARY_DIR=/tmp -f FlatGeobuf /data/" + identifier + "/" + outputFile.getName() + " /data/" + gpkgFile.getName() + " " + tableName;
-        //     //var cmd = "docker run -v " + pwd + ":/data ghcr.io/osgeo/gdal:ubuntu-full-latest ogr2ogr -f Parquet /data/" + identifier + "/" + outputFile.getName() + " /data/" + gpkgFile.getName() + " " + tableName;
-        //     err.println(cmd);
+                var lco = "";
+                if (format.getValue().equals("fgb")) {
+                    // Whitespace zu Beginn, dafür bei cmd nicht. Wegen cmd.split(" "). Führt zu fehlerhaften Befehl für ProcessBuilder.
+                    lco = " -lco SPATIAL_INDEX=YES -lco TEMPORARY_DIR=/tmp";
+                }
 
-        //     try {
-        //         ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
+                var cmd = "docker run --rm -v " + WORK_DIR + ":/tmp -v " + outputDir + ":/data ghcr.io/osgeo/gdal:ubuntu-full-latest ogr2ogr" + lco + " -f " + format.getKey() + " /data/" + outputFileName + " /tmp/" + gpkgFile.getName() + " " + tableName;
+                //err.println(cmd);
 
-        //         Process p = pb.start();
-        //         BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
-        //         String line = null;
-        //         while ((line = is.readLine()) != null)
-        //             err.println(line);
-        //         p.waitFor();
+                try {
+                    ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
+
+                    Process p = pb.start();
+                    {
+                        BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                        String line = null;
+                        while ((line = is.readLine()) != null)
+                            err.println(line);
+                        p.waitFor();
+                    }
+                    
+                    if (p.exitValue() != 0) {
+                        err.println("Error: ogr2ogr did not run successfully: " + tableName + " - " + format.getKey() + " - " + cmd);
+                        err.println("Retry...");
+
+                        p = pb.start();
+                        BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                        String line = null;
+                        while ((line = is.readLine()) != null)
+                            err.println(line);
+                        p.waitFor();
+
+                        continue;
+                    }
+                    
+                    // String location;
+                    // if (subunits) {
+                    //     location = themePublication.getIdentifier() + "/" + identifier;
+                    // } else {
+                    //     location = identifier;
+                    // }
+                    //amazonS3StorageService.store(outputFile, outputFile.getName(), location);
                 
-        //         if (p.exitValue() != 0) {
-        //             err.println("Error: ogr2ogr did not run successfully.");
-        //             //return;
-
-        //             continue;
-        //         }
-                
-        //         String location;
-        //         if (subunits) {
-        //             location = themePublication.getIdentifier() + "/" + identifier;
-        //         } else {
-        //             location = identifier;
-        //         }
-        //         //amazonS3StorageService.store(outputFile, outputFile.getName(), location);
-                
-        //     } catch (IOException | InterruptedException e) {
-        //         e.printStackTrace();
-        //         err.println(e.getMessage());
-        //         return;
-        //     }
-        // }
+                } catch (IOException | InterruptedException e) {
+                    e.printStackTrace();
+                    err.println(e.getMessage());
+                    return;
+                }
+            }
+        }
     }
 
     private static void saveFile(InputStream body, String destinationFile) throws IOException {
