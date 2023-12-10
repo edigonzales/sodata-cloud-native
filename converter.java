@@ -226,6 +226,10 @@ public class converter {
                             err.println(line);
                         p.waitFor();
 
+                        if (p.exitValue() != 0) {
+                            err.println("Failed again.");
+                        }
+
                         continue;
                     }
                     
