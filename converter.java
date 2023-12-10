@@ -127,8 +127,6 @@ public class converter {
     private static void convertDataset(String identifier, ThemePublication themePublication) throws URISyntaxException, IOException, InterruptedException, SQLException {
         boolean subunits = themePublication.getItems().size() > 1 ? true : false;
         
-        Map<String,String> formats = Map.of("Parquet", "parquet", "FlatGeobuf", "fgb");
-
         // Verzeichnisse erstellen, falls nicht vorhanden
         File resultRootDir;
         if (subunits) {
@@ -138,19 +136,14 @@ public class converter {
         }
 
         if (!resultRootDir.exists()) resultRootDir.mkdirs();
+        //err.println("Result root directory: " + resultRootDir);
 
+        Map<String,String> formats = Map.of("Parquet", "parquet", "FlatGeobuf", "fgb");
         for (var format : formats.entrySet()) {
             File formatDir = Paths.get(resultRootDir.getAbsolutePath(), format.getKey().toLowerCase()).toFile();
             if (!formatDir.exists()) formatDir.mkdirs(); 
         }
     
-
-        //err.println("Result root directory: " + resultRootDir);
-
-        // TODO:
-        // - Nach subunit-name noch das Format als Unterordner.
-
-
         // Herunterladen
         // String requestUrl;
         // if (subunits) {
@@ -229,18 +222,8 @@ public class converter {
                         if (p.exitValue() != 0) {
                             err.println("Failed again.");
                         }
-
-                        continue;
-                    }
-                    
-                    // String location;
-                    // if (subunits) {
-                    //     location = themePublication.getIdentifier() + "/" + identifier;
-                    // } else {
-                    //     location = identifier;
-                    // }
-                    //amazonS3StorageService.store(outputFile, outputFile.getName(), location);
-                
+                        //continue;
+                    }                
                 } catch (IOException | InterruptedException e) {
                     e.printStackTrace();
                     err.println(e.getMessage());
