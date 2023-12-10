@@ -152,7 +152,7 @@ public class converter {
         //     requestUrl = FILES_SERVER_URL + "/" + identifier + "/aktuell/" + identifier + ".gpkg.zip";                        
         // }
         
-        // var zipFile = Paths.get(WORK_DIR, identifier + ".gpkg.zip").toFile();
+        var zipFile = Paths.get(WORK_DIR, identifier + ".gpkg.zip").toFile();
         
         // var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
         //         .timeout(Duration.ofSeconds(30L)).build();
@@ -231,6 +231,9 @@ public class converter {
                 }
             }
         }
+
+        zipFile.delete();
+        gpkgFile.delete();
     }
 
     private static void saveFile(InputStream body, String destinationFile) throws IOException {
