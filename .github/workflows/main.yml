@@ -1,0 +1,27 @@
+name: CI/CD
+
+on:
+  workflow_dispatch:
+  push:
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  build-jvm:
+    env:
+      DATA_DIR: ./data
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: jbang
+        uses: jbangdev/jbang-action@v0.114.0
+        with:
+          script: converter.java
+

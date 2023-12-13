@@ -65,10 +65,10 @@ public class converter {
         var datasearchXmlFile = new File(DATASEARCH_XML_NAME);
         
         // Download metadata xml file from s3
-        // var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(DATASEARCH_XML_URL))
-        //        .timeout(Duration.ofSeconds(30L)).build();
-        // var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
-        // saveFile(response.body(), datasearchXmlFile.getAbsolutePath());
+        var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(DATASEARCH_XML_URL))
+               .timeout(Duration.ofSeconds(30L)).build();
+        var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+        saveFile(response.body(), datasearchXmlFile.getAbsolutePath());
 
         // XML parsen und Datensatz konvertieren
         var xmlMapper = new XmlMapper();
@@ -117,10 +117,7 @@ public class converter {
                    }
                 }
             }
-        }        
-
-
-
+        }
         out.println("Hello World");
     }
 
@@ -167,73 +164,73 @@ public class converter {
         // } 
 
         // Alle Tabellen eruieren, die konvertiert werden.
-        var gpkgFile = Paths.get(WORK_DIR, identifier + ".gpkg").toFile();
-        var tableNames = new ArrayList<String>();
-        var url = "jdbc:sqlite:" + gpkgFile;
-        try (var conn = DriverManager.getConnection(url)) {
-            try (var stmt = conn.createStatement()) {
-                var rs = stmt.executeQuery("SELECT tablename FROM T_ILI2DB_TABLE_PROP WHERE setting = 'CLASS'"); 
-                while (rs.next()) {
-                    tableNames.add(rs.getString("tablename"));
-                }
-            }
-        } 
+        // var gpkgFile = Paths.get(WORK_DIR, identifier + ".gpkg").toFile();
+        // var tableNames = new ArrayList<String>();
+        // var url = "jdbc:sqlite:" + gpkgFile;
+        // try (var conn = DriverManager.getConnection(url)) {
+        //     try (var stmt = conn.createStatement()) {
+        //         var rs = stmt.executeQuery("SELECT tablename FROM T_ILI2DB_TABLE_PROP WHERE setting = 'CLASS'"); 
+        //         while (rs.next()) {
+        //             tableNames.add(rs.getString("tablename"));
+        //         }
+        //     }
+        // } 
 
         // Konvertieren
-        for (String tableName : tableNames) {
-            err.println("Converting table: " + tableName);
+        // for (String tableName : tableNames) {
+        //     err.println("Converting table: " + tableName);
 
-            for (var format : formats.entrySet()) {
-                var outputFileName = tableName + "." + format.getValue();
-                var outputDir = Paths.get(resultRootDir.getAbsolutePath(), format.getKey().toLowerCase()).toFile().getAbsolutePath();
+        //     for (var format : formats.entrySet()) {
+        //         var outputFileName = tableName + "." + format.getValue();
+        //         var outputDir = Paths.get(resultRootDir.getAbsolutePath(), format.getKey().toLowerCase()).toFile().getAbsolutePath();
 
-                var lco = "";
-                if (format.getValue().equals("fgb")) {
-                    // Whitespace zu Beginn, dafür bei cmd nicht. Wegen cmd.split(" "). Führt zu fehlerhaften Befehl für ProcessBuilder.
-                    lco = " -lco SPATIAL_INDEX=YES -lco TEMPORARY_DIR=/tmp";
-                }
+        //         var lco = "";
+        //         if (format.getValue().equals("fgb")) {
+        //             // Whitespace zu Beginn, dafür bei cmd nicht. Wegen cmd.split(" "). Führt zu fehlerhaften Befehl für ProcessBuilder.
+        //             lco = " -lco SPATIAL_INDEX=YES -lco TEMPORARY_DIR=/tmp";
+        //         }
 
-                var cmd = "docker run --rm -v " + WORK_DIR + ":/tmp -v " + outputDir + ":/data ghcr.io/osgeo/gdal:ubuntu-full-latest ogr2ogr" + lco + " -f " + format.getKey() + " /data/" + outputFileName + " /tmp/" + gpkgFile.getName() + " " + tableName;
-                //err.println(cmd);
+        //         var cmd = "docker run --rm -v " + WORK_DIR + ":/tmp -v " + outputDir + ":/data ghcr.io/osgeo/gdal:ubuntu-full-latest ogr2ogr" + lco + " -f " + format.getKey() + " /data/" + outputFileName + " /tmp/" + gpkgFile.getName() + " " + tableName;
+        //         //err.println(cmd);
 
-                try {
-                    ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
+        //         try {
+        //             ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
 
-                    Process p = pb.start();
-                    {
-                        BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                        String line = null;
-                        while ((line = is.readLine()) != null)
-                            err.println(line);
-                        p.waitFor();
-                    }
+        //             Process p = pb.start();
+        //             {
+        //                 BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        //                 String line = null;
+        //                 while ((line = is.readLine()) != null)
+        //                     err.println(line);
+        //                 p.waitFor();
+        //             }
                     
-                    if (p.exitValue() != 0) {
-                        err.println("Error: ogr2ogr did not run successfully: " + tableName + " - " + format.getKey() + " - " + cmd);
-                        err.println("Retry...");
+        //             if (p.exitValue() != 0) {
+        //                 err.println("Error: ogr2ogr did not run successfully: " + tableName + " - " + format.getKey() + " - " + cmd);
+        //                 err.println("Retry...");
 
-                        p = pb.start();
-                        BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                        String line = null;
-                        while ((line = is.readLine()) != null)
-                            err.println(line);
-                        p.waitFor();
+        //                 p = pb.start();
+        //                 BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+        //                 String line = null;
+        //                 while ((line = is.readLine()) != null)
+        //                     err.println(line);
+        //                 p.waitFor();
 
-                        if (p.exitValue() != 0) {
-                            err.println("Failed again.");
-                        }
-                        //continue;
-                    }                
-                } catch (IOException | InterruptedException e) {
-                    e.printStackTrace();
-                    err.println(e.getMessage());
-                    return;
-                }
-            }
-        }
+        //                 if (p.exitValue() != 0) {
+        //                     err.println("Failed again.");
+        //                 }
+        //                 //continue;
+        //             }                
+        //         } catch (IOException | InterruptedException e) {
+        //             e.printStackTrace();
+        //             err.println(e.getMessage());
+        //             return;
+        //         }
+        //     }
+        // }
 
-        zipFile.delete();
-        gpkgFile.delete();
+        // zipFile.delete();
+        // gpkgFile.delete();
     }
 
     private static void saveFile(InputStream body, String destinationFile) throws IOException {
