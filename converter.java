@@ -158,24 +158,24 @@ public class converter {
         saveFile(response.body(), zipFile.getAbsolutePath());
 
         // Entzippen
-        // try {
-        //     new ZipFile(zipFile).extractAll(WORK_DIR);
-        // } catch (ZipException e) {
-        //     throw new IOException(e);
-        // } 
+        try {
+            new ZipFile(zipFile).extractAll(WORK_DIR);
+        } catch (ZipException e) {
+            throw new IOException(e);
+        } 
 
         // Alle Tabellen eruieren, die konvertiert werden.
-        // var gpkgFile = Paths.get(WORK_DIR, identifier + ".gpkg").toFile();
-        // var tableNames = new ArrayList<String>();
-        // var url = "jdbc:sqlite:" + gpkgFile;
-        // try (var conn = DriverManager.getConnection(url)) {
-        //     try (var stmt = conn.createStatement()) {
-        //         var rs = stmt.executeQuery("SELECT tablename FROM T_ILI2DB_TABLE_PROP WHERE setting = 'CLASS'"); 
-        //         while (rs.next()) {
-        //             tableNames.add(rs.getString("tablename"));
-        //         }
-        //     }
-        // } 
+        var gpkgFile = Paths.get(WORK_DIR, identifier + ".gpkg").toFile();
+        var tableNames = new ArrayList<String>();
+        var url = "jdbc:sqlite:" + gpkgFile;
+        try (var conn = DriverManager.getConnection(url)) {
+            try (var stmt = conn.createStatement()) {
+                var rs = stmt.executeQuery("SELECT tablename FROM T_ILI2DB_TABLE_PROP WHERE setting = 'CLASS'"); 
+                while (rs.next()) {
+                    tableNames.add(rs.getString("tablename"));
+                }
+            }
+        } 
 
         // Konvertieren
         // for (String tableName : tableNames) {
