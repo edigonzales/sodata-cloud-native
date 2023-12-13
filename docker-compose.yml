@@ -1,0 +1,23 @@
+version: '3'
+services:
+  frontend:
+    container_name: sodata-cloud-native
+    image: sogis/sodata-cloud-native
+    restart: unless-stopped
+    ports:
+      - "80:8080"
+    volumes:
+      - type: bind
+        source: /data
+        target: /opt/data
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    restart: unless-stopped
+    environment:
+      DOZZLE_USERNAME: admin
+      DOZZLE_PASSWORD: admin
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 9999:8080
