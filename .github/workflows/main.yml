@@ -20,8 +20,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Convert data
-        uses: jbangdev/jbang-action@v0.114.0
-        with:
-          script: converter.java
-
+      - name: Convert data 
+        run: |
+          jbang converter.java
