@@ -52,7 +52,7 @@ public class converter {
     private static final String FILES_SERVER_URL = "https://files.geo.so.ch";
 
     private static final String WORK_DIR = System.getProperty("java.io.tmpdir");
-    private static final String DATA_DIR = System.getenv("DATA_DIR")!=null ? System.getenv("DATA_DIR") : "/Users/stefan/tmp/cloud-native/"; 
+    private static final String DATA_DIR = System.getenv("DATA_DIR")!=null ? System.getenv("DATA_DIR") : "/data"; 
 
     private static HttpClient httpClient;
 
