@@ -142,19 +142,20 @@ public class converter {
         }
     
         // Herunterladen
-        // String requestUrl;
-        // if (subunits) {
-        //     requestUrl = FILES_SERVER_URL + "/" + themePublication.getIdentifier() + "/aktuell/" + identifier + ".gpkg.zip";            
-        // } else  {
-        //     requestUrl = FILES_SERVER_URL + "/" + identifier + "/aktuell/" + identifier + ".gpkg.zip";                        
-        // }
-        
+        String requestUrl;
+        if (subunits) {
+            requestUrl = FILES_SERVER_URL + "/" + themePublication.getIdentifier() + "/aktuell/" + identifier + ".gpkg.zip";            
+        } else  {
+            requestUrl = FILES_SERVER_URL + "/" + identifier + "/aktuell/" + identifier + ".gpkg.zip";                        
+        }
+        err.println("Downloading: " + requestUrl);
+
         var zipFile = Paths.get(WORK_DIR, identifier + ".gpkg.zip").toFile();
         
-        // var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
-        //         .timeout(Duration.ofSeconds(30L)).build();
-        // var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
-        // saveFile(response.body(), zipFile.getAbsolutePath());
+        var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
+                .timeout(Duration.ofSeconds(30L)).build();
+        var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+        saveFile(response.body(), zipFile.getAbsolutePath());
 
         // Entzippen
         // try {
