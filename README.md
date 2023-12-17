@@ -46,3 +46,10 @@ mkdir /data
 ```
 sudo systemctl enable cron
 ```
+
+crontab:
+```
+SHELL=/bin/bash
+PATH=/root/.sdkman/candidates/jbang/current/bin:/root/.sdkman/candidates/java/current/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+
+```
