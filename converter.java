@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.time.Duration;
 
 import net.lingala.zip4j.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -62,6 +63,8 @@ public class converter {
 
     private static final String WORK_DIR = System.getProperty("java.io.tmpdir");
     private static final String DATA_DIR = System.getenv("DATA_DIR")!=null ? System.getenv("DATA_DIR") : "/data"; 
+
+    private static final Boolean CREATE_STATIC_DATASETS = System.getenv("CREATE_STATIC_DATASETS")!=null ? Boolean.valueOf(System.getenv("CREATE_STATIC_DATASETS") ) : false;
 
     private static final String ILI_MODEL_NAME = "SO_AGI_STAC_20230426";
     private static final String ILI_TOPIC = ILI_MODEL_NAME+".Collections";
@@ -107,6 +110,53 @@ public class converter {
 
                 // Raster werden ignoriert
                 if (iomObj.getattrobj("Items", 0).getattrobj("Assets", 0).getattrvalue("MediaType").contains("tiff")) {
+
+                    if (iomObj.getattrvalue("Identifier").contains("klima")) {
+                        // do nothing 
+                        // not cogtiff ready
+                    } else {
+                        //err.println(iomObj.getattrvalue("Identifier"));
+                        
+                        String identifier = iomObj.getattrvalue("Identifier");
+                        IomObject boundary = iomObj.getattrobj("SpatialExtent", 0);
+                        String westlimit = boundary.getattrvalue("westlimit");
+                        String southlimit = boundary.getattrvalue("southlimit");
+                        String eastlimit = boundary.getattrvalue("eastlimit");
+                        String northlimit = boundary.getattrvalue("northlimit");
+                        String geometry = "POLYGON(("+westlimit+" "+southlimit+", "+eastlimit +" "+ southlimit+", "+eastlimit +" "+ northlimit+", "+westlimit +" "+ northlimit+", "+westlimit +" "+ southlimit+"))";
+
+                        IomObject itemObj = iomObj.getattrobj("Items", 0); // irgeneins ist iO.
+
+                        IomObject newAssetObj = new Iom_jObject(ASSET_STRUCTURE_TAG, null);
+                        newAssetObj.setattrvalue("Identifier", identifier + ".tif");
+                        newAssetObj.setattrvalue("Title", iomObj.getattrvalue("Title"));
+                        newAssetObj.setattrvalue("MediaType", "image/tiff; application=geotiff");
+                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/" + identifier + "/" + identifier + ".tif");
+
+                        IomObject newItemObj = new Iom_jObject(ITEM_STRUCTURE_TAG, null);
+                        newItemObj.setattrvalue("Identifier", identifier);
+                        newItemObj.setattrvalue("Title", iomObj.getattrvalue("Title"));
+                        newItemObj.setattrvalue("Date", itemObj.getattrvalue("Date"));
+                        newItemObj.addattrobj("Boundary", boundary);
+                        newItemObj.setattrvalue("Geometry", geometry);
+                        newItemObj.addattrobj("Assets", newAssetObj);
+
+                        Iom_jObject newCollectionObj = new Iom_jObject(iomObj.getobjecttag(), iomObj.getobjectoid());
+                        newCollectionObj.setattrvalue("Identifier", iomObj.getattrvalue("Identifier"));
+                        newCollectionObj.setattrvalue("Title", iomObj.getattrvalue("Title"));
+                        newCollectionObj.setattrvalue("ShortDescription", iomObj.getattrvalue("ShortDescription"));
+                        newCollectionObj.setattrvalue("Licence", iomObj.getattrvalue("Licence"));
+                        newCollectionObj.addattrobj("SpatialExtent", iomObj.getattrobj("SpatialExtent", 0));
+                        newCollectionObj.addattrobj("TemporalExtent", iomObj.getattrobj("TemporalExtent", 0));
+                        newCollectionObj.addattrobj("Owner", iomObj.getattrobj("Owner", 0));
+                        newCollectionObj.addattrobj("Servicer", iomObj.getattrobj("Servicer", 0));
+                        if (iomObj.getattrobj("Keywords", 0)!=null) {
+                            newCollectionObj.addattrobj("Keywords", iomObj.getattrobj("Keywords", 0));
+                        }
+                        newCollectionObj.addattrobj("Items", newItemObj);
+                        ioxWriter.write(new ObjectEvent(newCollectionObj));
+                    }
+
                     event = ioxReader.read();
                     continue;
                 }
@@ -126,10 +176,14 @@ public class converter {
 
                 String identifier = iomObj.getattrvalue("Identifier");
 
-                // TODO REMOVE
-                if (iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
-                    event = ioxReader.read();          
-                    continue;
+                // Damit Tests/Develop effizienter ging.
+                // Kann aber auch dafür verwendet werden, um die statischen 
+                // Höhenlinien nur einmalig zu rechnen.
+                if (CREATE_STATIC_DATASETS) {
+                    if (iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
+                        event = ioxReader.read();          
+                        continue;
+                    }
                 }
 
                 err.println("----------------------------------------------------");      
@@ -161,6 +215,7 @@ public class converter {
         List<IomObject> newItemsObjList = new ArrayList<>();
         for (int i=0; i<iomObj.getattrvaluecount("Items"); i++) {
             String itemIdentifier = iomObj.getattrobj("Items", i).getattrvalue("Identifier");
+            err.println("Converting item: " + itemIdentifier);
 
             // Verzeichnisse erstellen, falls nicht vorhanden
             File resultRootDir;
@@ -187,27 +242,37 @@ public class converter {
 
             // Herunterladen
             Iom_jObject itemObj = (Iom_jObject) iomObj.getattrobj("Items", i);
-            // String requestUrl = null;
-            // for (int ii=0; ii<itemObj.getattrvaluecount("Assets"); ii++) {
-            //     IomObject asset = itemObj.getattrobj("Assets", ii);
-            //     if (asset.getattrvalue("MediaType").contains("geopackage")) {
-            //         requestUrl = asset.getattrvalue("Href");
-            //     }
-            // }
-            // err.println("Downloading: " + requestUrl);
+            String requestUrl = null;
+            for (int ii=0; ii<itemObj.getattrvaluecount("Assets"); ii++) {
+                IomObject asset = itemObj.getattrobj("Assets", ii);
+                if (asset.getattrvalue("MediaType").contains("geopackage")) {
+                    requestUrl = asset.getattrvalue("Href");
+                }
+            }
+            err.println("Downloading: " + requestUrl);
     
-            // var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
-            //         .timeout(Duration.ofSeconds(30L)).build();
-            // var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
-            // saveFile(response.body(), zipFile.getAbsolutePath());
+            var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
+                    .timeout(Duration.ofSeconds(30L)).build();
+            var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+            saveFile(response.body(), zipFile.getAbsolutePath());
 
-            // // Entzippen
-            // try {
-            //     err.println("Unzipping: " + zipFile);
-            //     new ZipFile(zipFile).extractAll(WORK_DIR);
-            // } catch (ZipException e) {
-            //     throw new IOException(e);
-            // } 
+            // Entzippen
+            try {
+                err.println("Unzipping: " + zipFile);
+                String origFileName = gpkgFile.getName();
+                if (identifier.contains("lidar_2014.hoehenlinien")) {
+                    origFileName = itemIdentifier.substring(0,4) + itemIdentifier.substring(8, 12) + ".gpkg";
+                    new ZipFile(zipFile).extractFile(origFileName, WORK_DIR, gpkgFile.getName());
+                } else if (identifier.contains("lidar_2018.hoehenlinien") || identifier.contains("lidar_2019.hoehenlinien")) {
+                    origFileName = itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + ".gpkg";
+                    new ZipFile(zipFile).extractFile(origFileName, WORK_DIR, gpkgFile.getName());
+                } else {
+                    new ZipFile(zipFile).extractAll(WORK_DIR);
+                }
+
+            } catch (ZipException e) {
+                throw new IOException(e);
+            } 
 
             // Alle Tabellen eruieren, die konvertiert werden.
             var tableNames = new ArrayList<String>();
@@ -233,54 +298,53 @@ public class converter {
             for (String tableName : tableNames) {
                 err.println("Converting table: " + tableName);
 
+                for (var format : formats.entrySet()) {
+                    var outputFileName = tableName + "." + format.getValue();
+                    var outputDir = Paths.get(resultRootDir.getAbsolutePath(), format.getKey().toLowerCase()).toFile().getAbsolutePath();
 
-                // for (var format : formats.entrySet()) {
-                //     var outputFileName = tableName + "." + format.getValue();
-                //     var outputDir = Paths.get(resultRootDir.getAbsolutePath(), format.getKey().toLowerCase()).toFile().getAbsolutePath();
+                    var lco = "";
+                    if (format.getValue().equals("fgb")) {
+                        // Whitespace zu Beginn, dafür bei cmd nicht. Wegen cmd.split(" "). Führt zu fehlerhaften Befehl für ProcessBuilder.
+                        lco = " -lco SPATIAL_INDEX=YES -lco TEMPORARY_DIR=/tmp";
+                    }
 
-                //     var lco = "";
-                //     if (format.getValue().equals("fgb")) {
-                //         // Whitespace zu Beginn, dafür bei cmd nicht. Wegen cmd.split(" "). Führt zu fehlerhaften Befehl für ProcessBuilder.
-                //         lco = " -lco SPATIAL_INDEX=YES -lco TEMPORARY_DIR=/tmp";
-                //     }
+                    var cmd = "docker run --rm -v " + WORK_DIR + ":/tmp -v " + outputDir + ":/data ghcr.io/osgeo/gdal:ubuntu-full-latest ogr2ogr" + lco + " -f " + format.getKey() + " /data/" + outputFileName + " /tmp/" + gpkgFile.getName() + " " + tableName;
+                    //err.println(cmd);
 
-                //     var cmd = "docker run --rm -v " + WORK_DIR + ":/tmp -v " + outputDir + ":/data ghcr.io/osgeo/gdal:ubuntu-full-latest ogr2ogr" + lco + " -f " + format.getKey() + " /data/" + outputFileName + " /tmp/" + gpkgFile.getName() + " " + tableName;
-                //     //err.println(cmd);
+                    try {
+                        ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
 
-                //     try {
-                //         ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
-
-                //         Process p = pb.start();
-                //         {
-                //             BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                //             String line = null;
-                //             while ((line = is.readLine()) != null)
-                //                 err.println(line);
-                //             p.waitFor();
-                //         }
+                        Process p = pb.start();
+                        {
+                            BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                            String line = null;
+                            while ((line = is.readLine()) != null)
+                                err.println(line);
+                            p.waitFor();
+                        }
                         
-                //         if (p.exitValue() != 0) {
-                //             err.println("Error: ogr2ogr did not run successfully: " + tableName + " - " + format.getKey() + " - " + cmd);
-                //             err.println("Retry...");
+                        if (p.exitValue() != 0) {
+                            err.println("Error: ogr2ogr did not run successfully: " + tableName + " - " + format.getKey() + " - " + cmd);
+                            err.println("Retry...");
 
-                //             p = pb.start();
-                //             BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                //             String line = null;
-                //             while ((line = is.readLine()) != null)
-                //                 err.println(line);
-                //             p.waitFor();
+                            p = pb.start();
+                            BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                            String line = null;
+                            while ((line = is.readLine()) != null)
+                                err.println(line);
+                            p.waitFor();
 
-                //             if (p.exitValue() != 0) {
-                //                 err.println("Failed again.");
-                //             }
-                //             //continue;
-                //         }                
-                //     } catch (IOException | InterruptedException e) {
-                //         e.printStackTrace();
-                //         err.println(e.getMessage());
-                //         return null;
-                //     }
-                // }
+                            if (p.exitValue() != 0) {
+                                err.println("Failed again.");
+                            }
+                            //continue;
+                        }                
+                    } catch (IOException | InterruptedException e) {
+                        e.printStackTrace();
+                        err.println(e.getMessage());
+                        return null;
+                    }
+                }
 
                 {
                     IomObject newAssetObj = new Iom_jObject(ASSET_STRUCTURE_TAG, null);
