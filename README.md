@@ -53,3 +53,11 @@ SHELL=/bin/bash
 PATH=/root/.sdkman/candidates/jbang/current/bin:/root/.sdkman/candidates/java/current/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
 
 ```
+
+```
+java -jar /Users/stefan/apps/ili2pg-4.9.1/ili2pg-4.9.1.jar --dbhost localhost --dbport 54322 --dbdatabase pub --dbusr ddluser --dbpwd ddluser --dbschema agi_stac_v1 --models SO_AGI_STAC_20230426 --strokeArcs --coalesceJson --importBatchSize 5000 --schemaimport
+```
+
+```
+java -jar /Users/stefan/apps/ili2pg-4.9.1/ili2pg-4.9.1.jar --dbhost localhost --dbport 54322 --dbdatabase pub --dbusr ddluser --dbpwd ddluser --dbschema agi_stac_v1 --models SO_AGI_STAC_20230426 --strokeArcs --coalesceJson --importBatchSize 5000 --deleteData --import meta.xtf
+```
