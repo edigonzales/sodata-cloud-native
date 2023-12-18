@@ -62,7 +62,7 @@ public class converter {
     private static final String FILES_SERVER_URL = "https://files.geo.so.ch";
 
     private static final String WORK_DIR = System.getProperty("java.io.tmpdir");
-    private static final String DATA_DIR = System.getenv("DATA_DIR")!=null ? System.getenv("DATA_DIR") : "/data"; 
+    private static final String DATA_DIR = System.getenv("DATA_DIR")!=null ? System.getenv("DATA_DIR") : "/mnt/HC_Volume_100196105/data"; 
 
     private static final Boolean CREATE_STATIC_DATASETS = System.getenv("CREATE_STATIC_DATASETS")!=null ? Boolean.valueOf(System.getenv("CREATE_STATIC_DATASETS") ) : false;
 
@@ -131,7 +131,7 @@ public class converter {
                         newAssetObj.setattrvalue("Identifier", identifier + ".tif");
                         newAssetObj.setattrvalue("Title", iomObj.getattrvalue("Title"));
                         newAssetObj.setattrvalue("MediaType", "image/tiff; application=geotiff");
-                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/" + identifier + "/" + identifier + ".tif");
+                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/raster/" + identifier + ".tif");
 
                         IomObject newItemObj = new Iom_jObject(ITEM_STRUCTURE_TAG, null);
                         newItemObj.setattrvalue("Identifier", identifier);
