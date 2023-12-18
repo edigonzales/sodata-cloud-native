@@ -2,6 +2,7 @@
 
 ```
 jbang converter.java &> foo.log
+DATA_DIR=/Users/stefan/tmp/cloud-native/ CREATE_STATIC_DATASETS=true jbang converter.java
 ```
 
 ```

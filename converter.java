@@ -93,10 +93,10 @@ public class converter {
 
         // Download original meta xtf
         var datasearchXtfFile = new File(DATASEARCH_XTF_NAME);       
-        // var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(DATASEARCH_XTF_URL))
-        //        .timeout(Duration.ofSeconds(30L)).build();
-        // var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
-        // saveFile(response.body(), datasearchXtfFile.getAbsolutePath());
+        var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(DATASEARCH_XTF_URL))
+               .timeout(Duration.ofSeconds(30L)).build();
+        var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+        saveFile(response.body(), datasearchXtfFile.getAbsolutePath());
 
         ioxReader = new XtfReader(datasearchXtfFile);
         IoxEvent event = ioxReader.read();
