@@ -389,8 +389,8 @@ public class converter {
 
             newItemsObjList.add(newItemObject);
 
-            //zipFile.delete();
-            //gpkgFile.delete();
+            zipFile.delete();
+            gpkgFile.delete();
         }
 
         Iom_jObject newCollectionObj = new Iom_jObject(iomObj.getobjecttag(), iomObj.getobjectoid());
