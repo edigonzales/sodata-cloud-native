@@ -131,7 +131,7 @@ public class converter {
                         newAssetObj.setattrvalue("Identifier", identifier + ".tif");
                         newAssetObj.setattrvalue("Title", iomObj.getattrvalue("Title"));
                         newAssetObj.setattrvalue("MediaType", "image/tiff; application=geotiff");
-                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/raster/" + identifier + ".tif");
+                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/files/raster/" + identifier + ".tif");
 
                         IomObject newItemObj = new Iom_jObject(ITEM_STRUCTURE_TAG, null);
                         newItemObj.setattrvalue("Identifier", identifier);
