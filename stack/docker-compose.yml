@@ -1,18 +1,18 @@
 version: '3'
 services:
-  frontend:
-    build: ./nginx
-    image: sogis/sodata-cloud-native
-    container_name: sodata-cloud-native
-    restart: unless-stopped
-    ports:
-      - "80:8080"
-    volumes:
-      - type: bind
-        source: /mnt/HC_Volume_100196105/data
-        #source: /data
-        #source: /Users/stefan/tmp/cloud-native
-        target: /opt/data
+  # files:
+  #   build: ./nginx
+  #   image: sogis/sodata-cloud-native
+  #   container_name: sodata-cloud-native
+  #   restart: unless-stopped
+  #   ports:
+  #     - "83:8080"
+  #   volumes:
+  #     - type: bind
+  #       #source: /mnt/HC_Volume_100196105/data
+  #       #source: /data
+  #       source: /Users/stefan/tmp/cloud-native
+  #       target: /opt/data
   dozzle:
     container_name: dozzle
     image: amir20/dozzle:latest
@@ -59,6 +59,22 @@ services:
       DBSCHEMA: agi_stac_v1
     ports:
       - "8080:8080"
+  caddy:
+    image: caddy:latest
+    ports:
+      - 80:80
+      #- 443:443
+    volumes:
+      - ./caddy/data/:/data/
+      - ./caddy/config/:/config/
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile
+      - type: bind
+        source: /mnt/HC_Volume_100196105/data
+        #source: /data
+        #source: /Users/stefan/tmp/cloud-native
+        target: /opt/data
+
+    restart: unless-stopped
 
 volumes:
   postgresql_data_pub:

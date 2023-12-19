@@ -1,0 +1,35 @@
+localhost:80 {    
+    handle_path /files* {
+        root * /opt/data
+        file_server {
+            browse
+            hide .git .DS_Store
+        }
+    }
+
+    handle_path /service/* {
+        reverse_proxy stac:8080
+    }
+
+    log stdout
+}
+
+stac.sogeo.services {    
+    tls stefan.ziegler.de@gmail.com {
+        ca https://acme-staging-v02.api.letsencrypt.org/directory
+    }
+
+    handle_path /files* {
+        root * /opt/data
+        file_server {
+            browse
+            hide .git .DS_Store
+        }
+    }
+
+    handle_path /service/* {
+        reverse_proxy stac:8080
+    }
+
+    log stdout
+}
