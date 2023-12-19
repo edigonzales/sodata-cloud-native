@@ -251,41 +251,41 @@ public class converter {
                 if (!formatDir.exists()) formatDir.mkdirs(); 
             }
 
-            // Herunterladen
-            Iom_jObject itemObj = (Iom_jObject) iomObj.getattrobj("Items", i);
-            String requestUrl = null;
-            for (int ii=0; ii<itemObj.getattrvaluecount("Assets"); ii++) {
-                IomObject asset = itemObj.getattrobj("Assets", ii);
-                if (asset.getattrvalue("MediaType").contains("geopackage")) {
-                    requestUrl = asset.getattrvalue("Href");
-                }
-            }
-            err.println("Downloading: " + requestUrl);
+            // // Herunterladen
+            // Iom_jObject itemObj = (Iom_jObject) iomObj.getattrobj("Items", i);
+            // String requestUrl = null;
+            // for (int ii=0; ii<itemObj.getattrvaluecount("Assets"); ii++) {
+            //     IomObject asset = itemObj.getattrobj("Assets", ii);
+            //     if (asset.getattrvalue("MediaType").contains("geopackage")) {
+            //         requestUrl = asset.getattrvalue("Href");
+            //     }
+            // }
+            // err.println("Downloading: " + requestUrl);
     
-            var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
-                    .timeout(Duration.ofSeconds(30L)).build();
-            var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
-            saveFile(response.body(), zipFile.getAbsolutePath());
+            // var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
+            //         .timeout(Duration.ofSeconds(30L)).build();
+            // var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+            // saveFile(response.body(), zipFile.getAbsolutePath());
 
-            // Entzippen
-            try {
-                err.println("Unzipping: " + zipFile);
-                String origFileName = gpkgFile.getName();
-                if (identifier.contains("lidar_2014.hoehenlinien")) {
-                    origFileName = itemIdentifier.substring(0,4) + itemIdentifier.substring(8, 12) + ".gpkg";
-                    new ZipFile(zipFile).extractFile(origFileName, WORK_DIR, gpkgFile.getName());
-                } else if (identifier.contains("lidar_2018.hoehenlinien") || identifier.contains("lidar_2019.hoehenlinien")) {
-                    origFileName = itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + ".gpkg";
-                    new ZipFile(zipFile).extractFile(origFileName, WORK_DIR, gpkgFile.getName());
-                } else {
-                    new ZipFile(zipFile).extractAll(WORK_DIR);
-                }
+            // // Entzippen
+            // try {
+            //     err.println("Unzipping: " + zipFile);
+            //     String origFileName = gpkgFile.getName();
+            //     if (identifier.contains("lidar_2014.hoehenlinien")) {
+            //         origFileName = itemIdentifier.substring(0,4) + itemIdentifier.substring(8, 12) + ".gpkg";
+            //         new ZipFile(zipFile).extractFile(origFileName, WORK_DIR, gpkgFile.getName());
+            //     } else if (identifier.contains("lidar_2018.hoehenlinien") || identifier.contains("lidar_2019.hoehenlinien")) {
+            //         origFileName = itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + ".gpkg";
+            //         new ZipFile(zipFile).extractFile(origFileName, WORK_DIR, gpkgFile.getName());
+            //     } else {
+            //         new ZipFile(zipFile).extractAll(WORK_DIR);
+            //     }
 
-            } catch (ZipException e) {
-                e.printStackTrace();
-                err.println(e.getMessage());
-                continue;
-            } 
+            // } catch (ZipException e) {
+            //     e.printStackTrace();
+            //     err.println(e.getMessage());
+            //     continue;
+            // } 
 
             // Alle Tabellen eruieren, die konvertiert werden.
             var tableNames = new ArrayList<String>();
