@@ -28,9 +28,10 @@ stac.sogeo.services {
         }
     }
 
-    handle_path /service/* {
-        reverse_proxy stac:8080
-    }
+    reverse_proxy stac:8080
+    #handle_path /service/* {
+    #    reverse_proxy stac:8080
+    #}
 
     log stdout
 }
