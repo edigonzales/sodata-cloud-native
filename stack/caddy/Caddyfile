@@ -45,6 +45,8 @@ stac.sogeo.services {
             browse
             hide .git .DS_Store
         }
+
+        import cors {header.origin}
     }
 
     reverse_proxy stac:8080
@@ -52,7 +54,6 @@ stac.sogeo.services {
     #    reverse_proxy stac:8080
     #}
 
-    import cors {header.origin}
 
     log stdout
 }
