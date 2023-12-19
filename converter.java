@@ -186,6 +186,11 @@ public class converter {
                     }
                 }
 
+                if (!iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
+                        event = ioxReader.read();          
+                        continue;
+                }
+
                 err.println("----------------------------------------------------");      
                 err.println("Converting dataset: " + identifier);         
                 IomObject collectionObj = convertDataset(identifier, iomObj);  
