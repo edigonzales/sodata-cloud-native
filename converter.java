@@ -85,7 +85,7 @@ public class converter {
 
         // Create meta xtf
         TransferDescription td = getTransferDescriptionFromModelName(ILI_MODEL_NAME);
-        File xtfFile = Paths.get(DATA_DIR, "meta.xtf").toFile();
+        File xtfFile = Paths.get(DATA_DIR, "meta_full.xtf").toFile();
         ioxWriter = new XtfWriter(xtfFile, td);
 
         ioxWriter.write(new StartTransferEvent("SOGIS-20231217", "", null));
@@ -131,7 +131,7 @@ public class converter {
                         newAssetObj.setattrvalue("Identifier", identifier + ".tif");
                         newAssetObj.setattrvalue("Title", iomObj.getattrvalue("Title"));
                         newAssetObj.setattrvalue("MediaType", "image/tiff; application=geotiff");
-                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/files/raster/" + identifier + ".tif");
+                        newAssetObj.setattrvalue("Href", "https://stac.sogeo.services/files/raster/" + identifier + ".tif");
 
                         IomObject newItemObj = new Iom_jObject(ITEM_STRUCTURE_TAG, null);
                         newItemObj.setattrvalue("Identifier", identifier);
@@ -179,12 +179,12 @@ public class converter {
                 // Damit Tests/Develop effizienter ging.
                 // Kann aber auch dafür verwendet werden, um die statischen 
                 // Höhenlinien nur einmalig zu rechnen.
-                if (!CREATE_STATIC_DATASETS) {
-                    if (iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
-                        event = ioxReader.read();          
-                        continue;
-                    }
-                }
+                // if (!CREATE_STATIC_DATASETS) {
+                //     if (iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
+                //         event = ioxReader.read();          
+                //         continue;
+                //     }
+                // }
 
                 // TODO REMOVE
                 // if (!iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
@@ -324,39 +324,39 @@ public class converter {
                     var cmd = "docker run --rm -v " + WORK_DIR + ":/tmp -v " + outputDir + ":/data ghcr.io/osgeo/gdal:ubuntu-full-latest ogr2ogr" + lco + " -f " + format.getKey() + " /data/" + outputFileName + " /tmp/" + gpkgFile.getName() + " " + tableName;
                     //err.println(cmd);
 
-                    try {
-                        ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
+                    // try {
+                    //     ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
 
-                        Process p = pb.start();
-                        {
-                            BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                            String line = null;
-                            while ((line = is.readLine()) != null)
-                                err.println(line);
-                            p.waitFor();
-                        }
+                    //     Process p = pb.start();
+                    //     {
+                    //         BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    //         String line = null;
+                    //         while ((line = is.readLine()) != null)
+                    //             err.println(line);
+                    //         p.waitFor();
+                    //     }
                         
-                        if (p.exitValue() != 0) {
-                            err.println("Error: ogr2ogr did not run successfully: " + tableName + " - " + format.getKey() + " - " + cmd);
-                            err.println("Retry...");
+                    //     if (p.exitValue() != 0) {
+                    //         err.println("Error: ogr2ogr did not run successfully: " + tableName + " - " + format.getKey() + " - " + cmd);
+                    //         err.println("Retry...");
 
-                            p = pb.start();
-                            BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                            String line = null;
-                            while ((line = is.readLine()) != null)
-                                err.println(line);
-                            p.waitFor();
+                    //         p = pb.start();
+                    //         BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    //         String line = null;
+                    //         while ((line = is.readLine()) != null)
+                    //             err.println(line);
+                    //         p.waitFor();
 
-                            if (p.exitValue() != 0) {
-                                err.println("Failed again.");
-                            }
-                            //continue;
-                        }                
-                    } catch (IOException | InterruptedException e) {
-                        e.printStackTrace();
-                        err.println(e.getMessage());
-                        return null;
-                    }
+                    //         if (p.exitValue() != 0) {
+                    //             err.println("Failed again.");
+                    //         }
+                    //         //continue;
+                    //     }                
+                    // } catch (IOException | InterruptedException e) {
+                    //     e.printStackTrace();
+                    //     err.println(e.getMessage());
+                    //     return null;
+                    // }
                 }
 
                 {
@@ -365,9 +365,9 @@ public class converter {
                     newAssetObj.setattrvalue("Title", tableName + " (FlatGeobuf)");
                     newAssetObj.setattrvalue("MediaType", "application/flatgeobuf");
                     if (identifier.equals(itemIdentifier)) {
-                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/files/" + identifier + "/" + tableName + ".fgb");
+                        newAssetObj.setattrvalue("Href", "https://stac.sogeo.services/files/" + identifier + "/flatgeobuf/" + tableName + ".fgb");
                     } else {
-                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/files/" + identifier + "/" + itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + "/" + tableName + ".fgb");
+                        newAssetObj.setattrvalue("Href", "https://stac.sogeo.services/files/" + identifier + "/flatgeobuf/" + itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + "/" + tableName + ".fgb");
                     }
                     newAssetsObjList.add(newAssetObj);
                     //err.println(newAssetObj);
@@ -379,9 +379,9 @@ public class converter {
                     newAssetObj.setattrvalue("Title", tableName + " (GeoParquet)");
                     newAssetObj.setattrvalue("MediaType", "application/x-parquet");
                     if (identifier.equals(itemIdentifier)) {
-                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/files/" + identifier + "/" + tableName + ".parquet");
+                        newAssetObj.setattrvalue("Href", "https://stac.sogeo.services/files/" + identifier + "/parquet/" + tableName + ".parquet");
                     } else {
-                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/files" + identifier + "/" + itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + "/" + tableName + ".parquet");
+                        newAssetObj.setattrvalue("Href", "https://stac.sogeo.services/files" + identifier + "/parquet/" + itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + "/" + tableName + ".parquet");
                     }
                     newAssetsObjList.add(newAssetObj);
                     //err.println(newAssetObj);
