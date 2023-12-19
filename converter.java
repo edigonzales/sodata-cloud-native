@@ -282,7 +282,9 @@ public class converter {
                 }
 
             } catch (ZipException e) {
-                throw new IOException(e);
+                e.printStackTrace();
+                err.println(e.getMessage());
+                continue;
             } 
 
             // Alle Tabellen eruieren, die konvertiert werden.
