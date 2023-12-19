@@ -85,7 +85,7 @@ public class converter {
 
         // Create meta xtf
         TransferDescription td = getTransferDescriptionFromModelName(ILI_MODEL_NAME);
-        File xtfFile = Paths.get(DATA_DIR, "meta2.xtf").toFile();
+        File xtfFile = Paths.get(DATA_DIR, "meta.xtf").toFile();
         ioxWriter = new XtfWriter(xtfFile, td);
 
         ioxWriter.write(new StartTransferEvent("SOGIS-20231217", "", null));
@@ -179,12 +179,12 @@ public class converter {
                 // Damit Tests/Develop effizienter ging.
                 // Kann aber auch dafür verwendet werden, um die statischen 
                 // Höhenlinien nur einmalig zu rechnen.
-                //if (!CREATE_STATIC_DATASETS) {
+                if (!CREATE_STATIC_DATASETS) {
                     if (iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
                         event = ioxReader.read();          
                         continue;
                     }
-                //}
+                }
 
                 // TODO REMOVE
                 // if (!iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
@@ -253,39 +253,39 @@ public class converter {
 
             // Herunterladen
             Iom_jObject itemObj = (Iom_jObject) iomObj.getattrobj("Items", i);
-            // String requestUrl = null;
-            // for (int ii=0; ii<itemObj.getattrvaluecount("Assets"); ii++) {
-            //     IomObject asset = itemObj.getattrobj("Assets", ii);
-            //     if (asset.getattrvalue("MediaType").contains("geopackage")) {
-            //         requestUrl = asset.getattrvalue("Href");
-            //     }
-            // }
-            // err.println("Downloading: " + requestUrl);
+            String requestUrl = null;
+            for (int ii=0; ii<itemObj.getattrvaluecount("Assets"); ii++) {
+                IomObject asset = itemObj.getattrobj("Assets", ii);
+                if (asset.getattrvalue("MediaType").contains("geopackage")) {
+                    requestUrl = asset.getattrvalue("Href");
+                }
+            }
+            err.println("Downloading: " + requestUrl);
     
-            // var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
-            //         .timeout(Duration.ofSeconds(30L)).build();
-            // var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
-            // saveFile(response.body(), zipFile.getAbsolutePath());
+            var httpRequest = HttpRequest.newBuilder().GET().uri(new URI(requestUrl))
+                    .timeout(Duration.ofSeconds(30L)).build();
+            var response = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofInputStream());
+            saveFile(response.body(), zipFile.getAbsolutePath());
 
-            // // Entzippen
-            // try {
-            //     err.println("Unzipping: " + zipFile);
-            //     String origFileName = gpkgFile.getName();
-            //     if (identifier.contains("lidar_2014.hoehenlinien")) {
-            //         origFileName = itemIdentifier.substring(0,4) + itemIdentifier.substring(8, 12) + ".gpkg";
-            //         new ZipFile(zipFile).extractFile(origFileName, WORK_DIR, gpkgFile.getName());
-            //     } else if (identifier.contains("lidar_2018.hoehenlinien") || identifier.contains("lidar_2019.hoehenlinien")) {
-            //         origFileName = itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + ".gpkg";
-            //         new ZipFile(zipFile).extractFile(origFileName, WORK_DIR, gpkgFile.getName());
-            //     } else {
-            //         new ZipFile(zipFile).extractAll(WORK_DIR);
-            //     }
+            // Entzippen
+            try {
+                err.println("Unzipping: " + zipFile);
+                String origFileName = gpkgFile.getName();
+                if (identifier.contains("lidar_2014.hoehenlinien")) {
+                    origFileName = itemIdentifier.substring(0,4) + itemIdentifier.substring(8, 12) + ".gpkg";
+                    new ZipFile(zipFile).extractFile(origFileName, WORK_DIR, gpkgFile.getName());
+                } else if (identifier.contains("lidar_2018.hoehenlinien") || identifier.contains("lidar_2019.hoehenlinien")) {
+                    origFileName = itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + ".gpkg";
+                    new ZipFile(zipFile).extractFile(origFileName, WORK_DIR, gpkgFile.getName());
+                } else {
+                    new ZipFile(zipFile).extractAll(WORK_DIR);
+                }
 
-            // } catch (ZipException e) {
-            //     e.printStackTrace();
-            //     err.println(e.getMessage());
-            //     continue;
-            // } 
+            } catch (ZipException e) {
+                e.printStackTrace();
+                err.println(e.getMessage());
+                continue;
+            } 
 
             // Alle Tabellen eruieren, die konvertiert werden.
             var tableNames = new ArrayList<String>();
@@ -324,39 +324,39 @@ public class converter {
                     var cmd = "docker run --rm -v " + WORK_DIR + ":/tmp -v " + outputDir + ":/data ghcr.io/osgeo/gdal:ubuntu-full-latest ogr2ogr" + lco + " -f " + format.getKey() + " /data/" + outputFileName + " /tmp/" + gpkgFile.getName() + " " + tableName;
                     //err.println(cmd);
 
-                    // try {
-                    //     ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
+                    try {
+                        ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
 
-                    //     Process p = pb.start();
-                    //     {
-                    //         BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                    //         String line = null;
-                    //         while ((line = is.readLine()) != null)
-                    //             err.println(line);
-                    //         p.waitFor();
-                    //     }
+                        Process p = pb.start();
+                        {
+                            BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                            String line = null;
+                            while ((line = is.readLine()) != null)
+                                err.println(line);
+                            p.waitFor();
+                        }
                         
-                    //     if (p.exitValue() != 0) {
-                    //         err.println("Error: ogr2ogr did not run successfully: " + tableName + " - " + format.getKey() + " - " + cmd);
-                    //         err.println("Retry...");
+                        if (p.exitValue() != 0) {
+                            err.println("Error: ogr2ogr did not run successfully: " + tableName + " - " + format.getKey() + " - " + cmd);
+                            err.println("Retry...");
 
-                    //         p = pb.start();
-                    //         BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                    //         String line = null;
-                    //         while ((line = is.readLine()) != null)
-                    //             err.println(line);
-                    //         p.waitFor();
+                            p = pb.start();
+                            BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                            String line = null;
+                            while ((line = is.readLine()) != null)
+                                err.println(line);
+                            p.waitFor();
 
-                    //         if (p.exitValue() != 0) {
-                    //             err.println("Failed again.");
-                    //         }
-                    //         //continue;
-                    //     }                
-                    // } catch (IOException | InterruptedException e) {
-                    //     e.printStackTrace();
-                    //     err.println(e.getMessage());
-                    //     return null;
-                    // }
+                            if (p.exitValue() != 0) {
+                                err.println("Failed again.");
+                            }
+                            //continue;
+                        }                
+                    } catch (IOException | InterruptedException e) {
+                        e.printStackTrace();
+                        err.println(e.getMessage());
+                        return null;
+                    }
                 }
 
                 {
@@ -365,9 +365,9 @@ public class converter {
                     newAssetObj.setattrvalue("Title", tableName + " (FlatGeobuf)");
                     newAssetObj.setattrvalue("MediaType", "application/flatgeobuf");
                     if (identifier.equals(itemIdentifier)) {
-                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/" + identifier + "/" + tableName + ".fgb");
+                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/files/" + identifier + "/" + tableName + ".fgb");
                     } else {
-                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/" + identifier + "/" + itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + "/" + tableName + ".fgb");
+                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/files/" + identifier + "/" + itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + "/" + tableName + ".fgb");
                     }
                     newAssetsObjList.add(newAssetObj);
                     //err.println(newAssetObj);
@@ -379,9 +379,9 @@ public class converter {
                     newAssetObj.setattrvalue("Title", tableName + " (GeoParquet)");
                     newAssetObj.setattrvalue("MediaType", "application/x-parquet");
                     if (identifier.equals(itemIdentifier)) {
-                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/" + identifier + "/" + tableName + ".parquet");
+                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/files/" + identifier + "/" + tableName + ".parquet");
                     } else {
-                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/" + identifier + "/" + itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + "/" + tableName + ".parquet");
+                        newAssetObj.setattrvalue("Href", "http://stac.sogeo.services/files" + identifier + "/" + itemIdentifier.substring(0, itemIdentifier.indexOf(".")) + "/" + tableName + ".parquet");
                     }
                     newAssetsObjList.add(newAssetObj);
                     //err.println(newAssetObj);
