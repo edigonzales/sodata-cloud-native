@@ -85,7 +85,7 @@ public class converter {
 
         // Create meta xtf
         TransferDescription td = getTransferDescriptionFromModelName(ILI_MODEL_NAME);
-        File xtfFile = Paths.get(DATA_DIR, "meta.xtf").toFile();
+        File xtfFile = Paths.get(DATA_DIR, "meta2.xtf").toFile();
         ioxWriter = new XtfWriter(xtfFile, td);
 
         ioxWriter.write(new StartTransferEvent("SOGIS-20231217", "", null));
@@ -187,10 +187,10 @@ public class converter {
                 }
 
                 // TODO REMOVE
-                if (!iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
-                        event = ioxReader.read();          
-                        continue;
-                }
+                // if (!iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
+                //         event = ioxReader.read();          
+                //         continue;
+                // }
 
                 err.println("----------------------------------------------------");      
                 err.println("Converting dataset: " + identifier);  
@@ -324,39 +324,39 @@ public class converter {
                     var cmd = "docker run --rm -v " + WORK_DIR + ":/tmp -v " + outputDir + ":/data ghcr.io/osgeo/gdal:ubuntu-full-latest ogr2ogr" + lco + " -f " + format.getKey() + " /data/" + outputFileName + " /tmp/" + gpkgFile.getName() + " " + tableName;
                     //err.println(cmd);
 
-                    try {
-                        ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
+                    // try {
+                    //     ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));  
 
-                        Process p = pb.start();
-                        {
-                            BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                            String line = null;
-                            while ((line = is.readLine()) != null)
-                                err.println(line);
-                            p.waitFor();
-                        }
+                    //     Process p = pb.start();
+                    //     {
+                    //         BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    //         String line = null;
+                    //         while ((line = is.readLine()) != null)
+                    //             err.println(line);
+                    //         p.waitFor();
+                    //     }
                         
-                        if (p.exitValue() != 0) {
-                            err.println("Error: ogr2ogr did not run successfully: " + tableName + " - " + format.getKey() + " - " + cmd);
-                            err.println("Retry...");
+                    //     if (p.exitValue() != 0) {
+                    //         err.println("Error: ogr2ogr did not run successfully: " + tableName + " - " + format.getKey() + " - " + cmd);
+                    //         err.println("Retry...");
 
-                            p = pb.start();
-                            BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                            String line = null;
-                            while ((line = is.readLine()) != null)
-                                err.println(line);
-                            p.waitFor();
+                    //         p = pb.start();
+                    //         BufferedReader is = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                    //         String line = null;
+                    //         while ((line = is.readLine()) != null)
+                    //             err.println(line);
+                    //         p.waitFor();
 
-                            if (p.exitValue() != 0) {
-                                err.println("Failed again.");
-                            }
-                            //continue;
-                        }                
-                    } catch (IOException | InterruptedException e) {
-                        e.printStackTrace();
-                        err.println(e.getMessage());
-                        return null;
-                    }
+                    //         if (p.exitValue() != 0) {
+                    //             err.println("Failed again.");
+                    //         }
+                    //         //continue;
+                    //     }                
+                    // } catch (IOException | InterruptedException e) {
+                    //     e.printStackTrace();
+                    //     err.println(e.getMessage());
+                    //     return null;
+                    // }
                 }
 
                 {
