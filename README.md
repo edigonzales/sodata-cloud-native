@@ -62,10 +62,16 @@ DATA_DIR=/Users/stefan/tmp/cloud-native/ CREATE_STATIC_DATASETS=true jbang conve
 
 ```
 java -jar /Users/stefan/apps/ili2pg-4.9.1/ili2pg-4.9.1.jar --dbhost localhost --dbport 54322 --dbdatabase pub --dbusr ddluser --dbpwd ddluser --dbschema agi_stac_v1 --models SO_AGI_STAC_20230426 --strokeArcs --coalesceJson --importBatchSize 5000 --schemaimport
+
+java -jar ili2pg-4.9.1/ili2pg-4.9.1.jar --dbhost localhost --dbport 54322 --dbdatabase pub --dbusr ddluser --dbpwd ddluser --dbschema agi_stac_v1 --models SO_AGI_STAC_20230426 --strokeArcs --coalesceJson --importBatchSize 5000 --schemaimport
+
 ```
 
 ```
 java -jar /Users/stefan/apps/ili2pg-4.9.1/ili2pg-4.9.1.jar --dbhost localhost --dbport 54322 --dbdatabase pub --dbusr ddluser --dbpwd ddluser --dbschema agi_stac_v1 --models SO_AGI_STAC_20230426 --strokeArcs --coalesceJson --importBatchSize 5000 --deleteData --import meta.xtf
+
+
+java -jar ili2pg-4.9.1/ili2pg-4.9.1.jar --dbhost localhost --dbport 54322 --dbdatabase pub --dbusr ddluser --dbpwd ddluser --dbschema agi_stac_v1 --models SO_AGI_STAC_20230426 --strokeArcs --coalesceJson --importBatchSize 5000 --deleteData --import /mnt/HC_Volume_100196105/data/meta.xtf
 ```
 
 Hetzner: Firewall erstellt wegen DB.

@@ -180,7 +180,7 @@ public class converter {
                 // Kann aber auch dafür verwendet werden, um die statischen 
                 // Höhenlinien nur einmalig zu rechnen.
                 if (CREATE_STATIC_DATASETS) {
-                    if (iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
+                    if (!iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
                         event = ioxReader.read();          
                         continue;
                     }
@@ -194,8 +194,7 @@ public class converter {
                 }        
             } else if (event instanceof EndBasketEvent) {
 
-            }
-            else if (event instanceof EndTransferEvent) {
+            } else if (event instanceof EndTransferEvent) {
                 ioxReader.close();                
                 break;
             }
