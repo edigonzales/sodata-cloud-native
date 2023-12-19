@@ -201,6 +201,7 @@ public class converter {
                     }        
                 } catch (Exception e) {
                     err.println(e.getMessage());
+                    event = ioxReader.read();
                     continue;
                 }        
             } else if (event instanceof EndBasketEvent) {
