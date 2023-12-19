@@ -186,6 +186,7 @@ public class converter {
                     }
                 }
 
+                // TODO REMOVE
                 if (!iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
                         event = ioxReader.read();          
                         continue;
