@@ -15,9 +15,10 @@ localhost:80 {
 }
 
 stac.sogeo.services {    
-    tls stefan.ziegler.de@gmail.com {
-        ca https://acme-staging-v02.api.letsencrypt.org/directory
-    }
+    tls stefan.ziegler.de@gmail.com 
+    #tls stefan.ziegler.de@gmail.com {
+    #    ca https://acme-staging-v02.api.letsencrypt.org/directory
+    #}
 
     handle_path /files* {
         root * /opt/data
