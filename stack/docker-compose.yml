@@ -1,18 +1,18 @@
 version: '3'
 services:
-  files:
-    build: ./nginx
-    image: sogis/sodata-cloud-native
-    container_name: sodata-cloud-native
-    restart: unless-stopped
-    ports:
-      - "83:8080"
-    volumes:
-      - type: bind
-        #source: /mnt/HC_Volume_100196105/data
-        #source: /data
-        source: /Users/stefan/tmp/cloud-native
-        target: /opt/data
+  # files:
+  #   build: ./nginx
+  #   image: sogis/sodata-cloud-native
+  #   container_name: sodata-cloud-native
+  #   restart: unless-stopped
+  #   ports:
+  #     - "83:8080"
+  #   volumes:
+  #     - type: bind
+  #       #source: /mnt/HC_Volume_100196105/data
+  #       #source: /data
+  #       source: /Users/stefan/tmp/cloud-native
+  #       target: /opt/data
   dozzle:
     container_name: dozzle
     image: amir20/dozzle:latest
