@@ -7,6 +7,8 @@ DATA_DIR=/Users/stefan/tmp/cloud-native/ CREATE_STATIC_DATASETS=true jbang conve
 DATA_DIR=/mnt/HC_Volume_100196105/data/ CREATE_STATIC_DATASETS=true jbang converter.java &> foo.log
 
 DATA_DIR=/mnt/HC_Volume_100196105/data/ CREATE_STATIC_DATASETS=true nohup jbang converter.java &> foo.log &
+
+DATA_DIR=/mnt/HC_Volume_100196105/data/ CREATE_STATIC_DATASETS=false jbang converter.java
 ```
 
 ```
