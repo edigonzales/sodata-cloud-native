@@ -192,10 +192,15 @@ public class converter {
                 }
 
                 err.println("----------------------------------------------------");      
-                err.println("Converting dataset: " + identifier);         
-                IomObject collectionObj = convertDataset(identifier, iomObj);  
-                if (collectionObj != null) {
-                    ioxWriter.write(new ObjectEvent(collectionObj));
+                err.println("Converting dataset: " + identifier);  
+                try {
+                    IomObject collectionObj = convertDataset(identifier, iomObj);  
+                    if (collectionObj != null) {
+                        ioxWriter.write(new ObjectEvent(collectionObj));
+                    }        
+                } catch (Exception e) {
+                    err.println(e.getMessage());
+                    continue;
                 }        
             } else if (event instanceof EndBasketEvent) {
 
