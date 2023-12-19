@@ -4,8 +4,8 @@
     header {
         Access-Control-Allow-Origin "{header.origin}"
         Vary Origin
-        Access-Control-Expose-Headers "Authorization"
-        Access-Control-Allow-Credentials "true"
+        Access-Control-Expose-Headers "*"
+        #Access-Control-Allow-Credentials "true"
     }
 
     handle @cors_preflight {
@@ -52,7 +52,7 @@ stac.sogeo.services {
     #    reverse_proxy stac:8080
     #}
 
-	import cors {header.origin}
+    import cors {header.origin}
 
     log stdout
 }
