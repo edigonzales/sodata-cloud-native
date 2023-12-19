@@ -251,8 +251,8 @@ public class converter {
                 if (!formatDir.exists()) formatDir.mkdirs(); 
             }
 
-            // // Herunterladen
-            // Iom_jObject itemObj = (Iom_jObject) iomObj.getattrobj("Items", i);
+            // Herunterladen
+            Iom_jObject itemObj = (Iom_jObject) iomObj.getattrobj("Items", i);
             // String requestUrl = null;
             // for (int ii=0; ii<itemObj.getattrvaluecount("Assets"); ii++) {
             //     IomObject asset = itemObj.getattrobj("Assets", ii);
