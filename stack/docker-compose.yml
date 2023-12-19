@@ -1,64 +1,64 @@
 version: '3'
 services:
-  # files:
-  #   build: ./nginx
-  #   image: sogis/sodata-cloud-native
-  #   container_name: sodata-cloud-native
-  #   restart: unless-stopped
-  #   ports:
-  #     - "83:8080"
-  #   volumes:
-  #     - type: bind
-  #       #source: /mnt/HC_Volume_100196105/data
-  #       #source: /data
-  #       source: /Users/stefan/tmp/cloud-native
-  #       target: /opt/data
-  # dozzle:
-  #   container_name: dozzle
-  #   image: amir20/dozzle:latest
-  #   restart: unless-stopped
-  #   environment:
-  #     DOZZLE_USERNAME: admin
-  #     DOZZLE_PASSWORD: admin
-  #   volumes:
-  #     - /var/run/docker.sock:/var/run/docker.sock
-  #   ports:
-  #     - 9999:8080
-  # pub-db:
-  #   image: bitnami/postgresql:14.8.0-debian-11-r74
-  #   restart: unless-stopped
-  #   environment:
-  #     POSTGRESQL_DATABASE: pub
-  #     POSTGRESQL_USERNAME: ddluser
-  #     POSTGRESQL_PASSWORD: ddluser
-  #     POSTGRESQL_USERNAME_2: dmluser
-  #     POSTGRESQL_PASSWORD_2: dmluser
-  #     POSTGRESQL_POSTGRES_PASSWORD: secret
-  #     POSTGRESQL_INITSCRIPTS_USERNAME: postgres
-  #     POSTGRESQL_INITSCRIPTS_PASSWORD: secret
-  #     #POSTGRESQL_INITDB_ARGS: --locale=de_CH.UTF-8
-  #   ports:
-  #     - "54322:5432"
-  #   volumes:
-  #     - type: bind
-  #       source: ./postgres/preinitdb.d
-  #       target: /docker-entrypoint-preinitdb.d
-  #     - type: bind
-  #       source: ./postgres/initdb.d
-  #       target: /docker-entrypoint-initdb.d
-  #     - type: volume
-  #       source: postgresql_data_pub
-  #       target: /bitnami/postgresql
-  # stac:
-  #   image: sogis/sodata-stac:latest
-  #   restart: unless-stopped
-  #   environment:
-  #     DBURL: jdbc:postgresql://pub-db:5432/pub
-  #     DBUSR: ddluser 
-  #     DBPWD: ddluser 
-  #     DBSCHEMA: agi_stac_v1
-  #   ports:
-  #     - "8080:8080"
+  files:
+    build: ./nginx
+    image: sogis/sodata-cloud-native
+    container_name: sodata-cloud-native
+    restart: unless-stopped
+    ports:
+      - "83:8080"
+    volumes:
+      - type: bind
+        #source: /mnt/HC_Volume_100196105/data
+        #source: /data
+        source: /Users/stefan/tmp/cloud-native
+        target: /opt/data
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    restart: unless-stopped
+    environment:
+      DOZZLE_USERNAME: admin
+      DOZZLE_PASSWORD: admin
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 9999:8080
+  pub-db:
+    image: bitnami/postgresql:14.8.0-debian-11-r74
+    restart: unless-stopped
+    environment:
+      POSTGRESQL_DATABASE: pub
+      POSTGRESQL_USERNAME: ddluser
+      POSTGRESQL_PASSWORD: ddluser
+      POSTGRESQL_USERNAME_2: dmluser
+      POSTGRESQL_PASSWORD_2: dmluser
+      POSTGRESQL_POSTGRES_PASSWORD: secret
+      POSTGRESQL_INITSCRIPTS_USERNAME: postgres
+      POSTGRESQL_INITSCRIPTS_PASSWORD: secret
+      #POSTGRESQL_INITDB_ARGS: --locale=de_CH.UTF-8
+    ports:
+      - "54322:5432"
+    volumes:
+      - type: bind
+        source: ./postgres/preinitdb.d
+        target: /docker-entrypoint-preinitdb.d
+      - type: bind
+        source: ./postgres/initdb.d
+        target: /docker-entrypoint-initdb.d
+      - type: volume
+        source: postgresql_data_pub
+        target: /bitnami/postgresql
+  stac:
+    image: sogis/sodata-stac:latest
+    restart: unless-stopped
+    environment:
+      DBURL: jdbc:postgresql://pub-db:5432/pub
+      DBUSR: ddluser 
+      DBPWD: ddluser 
+      DBSCHEMA: agi_stac_v1
+    ports:
+      - "8080:8080"
   caddy:
     image: caddy:latest
     ports:
