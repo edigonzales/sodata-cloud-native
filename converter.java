@@ -179,8 +179,8 @@ public class converter {
                 // Damit Tests/Develop effizienter ging.
                 // Kann aber auch dafür verwendet werden, um die statischen 
                 // Höhenlinien nur einmalig zu rechnen.
-                if (CREATE_STATIC_DATASETS) {
-                    if (!iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
+                if (!CREATE_STATIC_DATASETS) {
+                    if (iomObj.getattrvalue("Identifier").contains("hoehenlinien")) {
                         event = ioxReader.read();          
                         continue;
                     }
