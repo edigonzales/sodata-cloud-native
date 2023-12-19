@@ -2,7 +2,7 @@
     @cors_preflight method OPTIONS
 
     header {
-        Access-Control-Allow-Origin "{header.origin}"
+        Access-Control-Allow-Origin "*"
         Vary Origin
         Access-Control-Expose-Headers "*"
         #Access-Control-Allow-Credentials "true"
