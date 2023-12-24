@@ -85,7 +85,7 @@ public class converter {
 
         // Create meta xtf
         TransferDescription td = getTransferDescriptionFromModelName(ILI_MODEL_NAME);
-        File xtfFile = Paths.get(DATA_DIR, "meta_full.xtf").toFile();
+        File xtfFile = Paths.get(DATA_DIR, "meta-20231224.xtf").toFile();
         ioxWriter = new XtfWriter(xtfFile, td);
 
         ioxWriter.write(new StartTransferEvent("SOGIS-20231217", "", null));
@@ -237,7 +237,7 @@ public class converter {
                 zipFile = Paths.get(WORK_DIR, identifier + ".gpkg.zip").toFile();
                 gpkgFile = Paths.get(WORK_DIR, identifier + ".gpkg").toFile();
             } else {
-                resultRootDir = Paths.get(DATA_DIR, identifier, itemIdentifier.substring(0, itemIdentifier.indexOf("."))).toFile();
+                resultRootDir = Paths.get(DATA_DIR, identifier, "bfs_nr="+itemIdentifier.substring(0, itemIdentifier.indexOf("."))).toFile();
                 zipFile = Paths.get(WORK_DIR, itemIdentifier + ".gpkg.zip").toFile();
                 gpkgFile = Paths.get(WORK_DIR, itemIdentifier + ".gpkg").toFile();
             }
@@ -248,7 +248,7 @@ public class converter {
             Map<String,String> formats = Map.of("Parquet", "parquet", "FlatGeobuf", "fgb");
             for (var format : formats.entrySet()) {
                 File formatDir = Paths.get(resultRootDir.getAbsolutePath(), format.getKey().toLowerCase()).toFile();
-                if (!formatDir.exists()) formatDir.mkdirs(); 
+                //if (!formatDir.exists()) formatDir.mkdirs(); 
             }
 
             // Herunterladen
@@ -313,7 +313,8 @@ public class converter {
 
                 for (var format : formats.entrySet()) {
                     var outputFileName = tableName + "." + format.getValue();
-                    var outputDir = Paths.get(resultRootDir.getAbsolutePath(), format.getKey().toLowerCase()).toFile().getAbsolutePath();
+                    //var outputDir = Paths.get(resultRootDir.getAbsolutePath(), format.getKey().toLowerCase()).toFile().getAbsolutePath();
+                    var outputDir = resultRootDir.getAbsolutePath();
 
                     var lco = "";
                     if (format.getValue().equals("fgb")) {
